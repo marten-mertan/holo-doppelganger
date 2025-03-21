@@ -1,6 +1,7 @@
 export default defineNuxtConfig({
   modules: [
     '@nuxt/eslint',
+    '@pinia/nuxt',
   ],
 
   devtools: { enabled: true },
@@ -48,12 +49,12 @@ export default defineNuxtConfig({
       ],
       link: [
         /* Favicons */
-        { rel: 'icon', type: 'image/x-icon', href: '/nuxt3-template/favicons/favicon.ico' },
-        { rel: 'icon', type: 'image/png', sizes: '32x32', href: '/nuxt3-template/favicons/favicon-32x32.png' },
-        { rel: 'icon', type: 'image/png', sizes: '16x16', href: '/nuxt3-template/favicons/favicon-16x16.png' },
-        { rel: 'apple-touch-icon', sizes: '180x180', href: '/nuxt3-template/favicons/apple-touch-icon.png' },
-        { rel: 'manifest', href: '/nuxt3-template/favicons/site.webmanifest' },
-        { rel: 'mask-icon', href: '/nuxt3-template/favicons/safari-pinned-tab.svg', color: '#e7609e' },
+        { rel: 'icon', type: 'image/x-icon', href: '/holo-doppelganger/favicons/favicon.ico' },
+        { rel: 'icon', type: 'image/png', sizes: '32x32', href: '/holo-doppelganger/favicons/favicon-32x32.png' },
+        { rel: 'icon', type: 'image/png', sizes: '16x16', href: '/holo-doppelganger/favicons/favicon-16x16.png' },
+        { rel: 'apple-touch-icon', sizes: '180x180', href: '/holo-doppelganger/favicons/apple-touch-icon.png' },
+        { rel: 'manifest', href: '/holo-doppelganger/favicons/site.webmanifest' },
+        { rel: 'mask-icon', href: '/holo-doppelganger/favicons/safari-pinned-tab.svg', color: '#e7609e' },
       ],
     },
   },
