@@ -1,75 +1,91 @@
 <script setup lang="ts">
-import { useGameStore } from '~/stores/game'
+import { ref, onMounted, watch, computed } from 'vue'
+import type { Position } from '~/types/level'
 
-const { type, pos, facing } = defineProps<{
+const props = defineProps<{
   type: 'player' | 'mimic'
-  pos: { row: number, col: number }
+  pos: Position
+  lastPos: Position | null
   facing: 'left' | 'right'
 }>()
 
-const $style = useCssModule()
-const gameStore = useGameStore()
+const entityRef = ref<HTMLDivElement | null>(null)
+const animationFrame = ref<number | null>(null)
+const isMoving = ref(false)
 
-const entityRef = ref<HTMLElement | null>(null)
-const classList = ref<string[]>([$style[type], $style.idle, $style['facing-right']])
+const animationState = computed(() => isMoving.value ? 'run' : 'idle')
 
-let animationTimeout: ReturnType<typeof setTimeout> | null = null
-
-// Обновление направления
-watch(() => facing, (newFacing) => {
-  if (entityRef.value) {
-    classList.value = classList.value.filter(cls => cls !== $style['facing-left'] && cls !== $style['facing-right'])
-    classList.value.push(newFacing === 'left' ? $style['facing-left'] : $style['facing-right'])
-  }
-}, { immediate: true })
-
-const animate = (currentPos: { row: number, col: number }, previousPos: { row: number, col: number } | null, isGameOver: boolean) => {
+const animate = (startPos: Position, endPos: Position, duration: number = 200) => {
   if (!entityRef.value) return
 
-  // Очищаем таймер только если игра не окончена
-  if (animationTimeout && !isGameOver) {
-    clearTimeout(animationTimeout)
-    animationTimeout = null
+  isMoving.value = true
+
+  const startX = startPos.col * 80
+  const startY = startPos.row * 80
+  const endX = endPos.col * 80
+  const endY = endPos.row * 80
+
+  const startTime = performance.now()
+
+  const step = (currentTime: number) => {
+    const elapsed = currentTime - startTime
+    const progress = Math.min(elapsed / duration, 1)
+
+    const currentX = startX + (endX - startX) * progress
+    const currentY = startY + (endY - startY) * progress
+
+    entityRef.value!.style.transform = `translate(${currentX}px, ${currentY}px) scaleX(${props.facing === 'left' ? -1 : 1})`
+
+    if (progress < 1) {
+      animationFrame.value = requestAnimationFrame(step)
+    } else {
+      animationFrame.value = null
+      isMoving.value = false
+    }
   }
 
-  const isMoving = previousPos && (currentPos.row !== previousPos.row || currentPos.col !== previousPos.col)
-
-  // Базовый список классов, включая тип и направление
-  const newClassList = [$style[type], facing === 'left' ? $style['facing-left'] : $style['facing-right']]
-
-  if (isGameOver && type === 'player') {
-    newClassList.push($style.dying)
-    // Не добавляем таймер, чтобы анимация смерти проигрывалась полностью
-  }
-  else if (isMoving) {
-    newClassList.push($style.run)
-    animationTimeout = setTimeout(() => {
-      if (entityRef.value && !gameStore.gameOver) { // Проверяем gameOver на момент срабатывания таймера
-        classList.value = [$style[type], $style.idle, facing === 'left' ? $style['facing-left'] : $style['facing-right']]
-      }
-    }, 480)
-  }
-  else {
-    newClassList.push($style.idle)
+  if (animationFrame.value) {
+    cancelAnimationFrame(animationFrame.value)
   }
 
-  classList.value = newClassList
-
-  entityRef.value.style.animation = 'none'
-  void entityRef.value.offsetWidth
-  entityRef.value.style.animation = ''
-
-  console.log(`${type} animate:`, { currentPos, previousPos, facing, isGameOver, classList: classList.value })
+  animationFrame.value = requestAnimationFrame(step)
 }
 
-defineExpose({ animate })
+const setPosition = (pos: Position) => {
+  if (!entityRef.value) return
+  const x = pos.col * 80
+  const y = pos.row * 80
+  entityRef.value.style.transform = `translate(${x}px, ${y}px) scaleX(${props.facing === 'left' ? -1 : 1})`
+  isMoving.value = false
+}
+
+onMounted(() => {
+  setPosition(props.pos)
+})
+
+watch(() => props.pos, (newPos, oldPos) => {
+  if (props.lastPos) {
+    animate(props.lastPos, newPos)
+  } else {
+    setPosition(newPos)
+  }
+})
+
+defineExpose({
+  setPosition,
+  animate
+})
 </script>
 
 <template>
   <div
     ref="entityRef"
-    :class="[$style.GameEntity, classList]"
-    :style="{ left: `${pos.col * gameStore.CELL_SIZE}px`, top: `${pos.row * gameStore.CELL_SIZE}px` }"
+    :class="[
+      $style.GameEntity,
+      $style[type],
+      $style[props.facing === 'left' ? 'facing-left' : 'facing-right'],
+      $style[animationState]
+    ]"
   />
 </template>
 
@@ -83,9 +99,9 @@ $frame-width: 80px;
   height: 80px;
   position: absolute;
   background-repeat: no-repeat;
-  transition: left 0.2s linear, top 0.2s ease-in;
   opacity: 1;
   transform: scale(1) rotate(0deg);
+  will-change: transform, opacity;
 }
 
 .player {
@@ -97,25 +113,25 @@ $frame-width: 80px;
 }
 
 .player.idle {
-  background-image: url('~/public/img/player/player_idle.png');
+  background-image: url('/holo-doppelganger/img/player/player_idle.png');
   background-size: #{$idle-frames * $frame-width} auto;
   animation: idle #{$idle-frames * 0.15s} steps(#{$idle-frames - 1}) infinite;
 }
 
 .mimic.idle {
-  background-image: url('~/public/img/mimic/mimic_idle.png');
+  background-image: url('/holo-doppelganger/img/mimic/mimic_idle.png');
   background-size: #{$idle-frames * $frame-width} auto;
   animation: idle #{$idle-frames * 0.15s} steps(#{$idle-frames - 1}) infinite;
 }
 
 .player.run {
-  background-image: url('~/public/img/player/player_run.png');
+  background-image: url('/holo-doppelganger/img/player/player_run.png');
   background-size: #{$run-frames * $frame-width} auto;
   animation: run #{$run-frames * 0.08s} steps(#{$run-frames - 1}) forwards;
 }
 
 .mimic.run {
-  background-image: url('~/public/img/mimic/mimic_run.png');
+  background-image: url('/holo-doppelganger/img/mimic/mimic_run.png');
   background-size: #{$run-frames * $frame-width} auto;
   animation: run #{$run-frames * 0.08s} steps(#{$run-frames - 1}) forwards;
 }
@@ -131,7 +147,7 @@ $frame-width: 80px;
 }
 
 .dying {
-  background-image: url('~/public/img/player/player_idle.png');
+  background-image: url('/holo-doppelganger/img/player/player_idle.png');
   background-size: #{$idle-frames * $frame-width} auto;
   animation: death 1s ease forwards;
 }

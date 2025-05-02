@@ -15,18 +15,24 @@
 
 <style lang="scss" module>
   .DefaultLayout {
-    //
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
   }
 
   .main {
     display: flex;
     flex-direction: column;
     width: 100%;
-    padding-top: $header-h;
-    flex-grow: 1;
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+  }
 
-    @include respond-to(mobile) {
-      padding-top: $header-h-m;
-    }
+  .layout {
+    height: 100vh;
+    width: 100%;
+    overflow: hidden;
   }
 </style>

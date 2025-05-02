@@ -5,28 +5,28 @@ import { useRouter } from 'vue-router'
 const gameStore = useGameStore()
 const router = useRouter()
 
-// Если уровень уже загружен, перенаправляем на игру
+// Если уровень не загружен, перенаправляем на выбор уровня
 onMounted(() => {
-  if (gameStore.currentLevel) {
-    router.push('/game')
+  if (!gameStore.currentLevel) {
+    router.push('/')
   }
 })
 </script>
 
 <template>
-  <div :class="[$style.IndexPage, 'container']">
-    <LevelSelect />
+  <div :class="[$style.GamePage, 'container']">
+    <TheGame />
   </div>
 </template>
 
 <style lang="scss" module>
-.IndexPage {
+.GamePage {
   height: 100%;
   width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 2rem;
+  overflow: hidden;
 }
-</style>
+</style> 
