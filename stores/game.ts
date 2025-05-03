@@ -1,14 +1,15 @@
 import { defineStore } from 'pinia'
-import type { Level, Position, Door, Button } from '~/types/level'
+import type { FacingDirection, MoveDirection } from '~/types/tGame'
+import type { Level, Position, Door, Button } from '~/types/tLevel'
 
 export const useGameStore = defineStore('game', {
   state: () => ({
     currentLevel: null as Level | null,
-    playerPos: { row: 0, col: 0 },
-    playerLastPos: { row: 0, col: 0 },
+    playerPos: { row: 0, col: 0 } as Position,
+    playerLastPos: { row: 0, col: 0 } as Position,
     mimicLastPos: null as Position | null,
-    playerFacing: 'right' as 'left' | 'right',
-    mimicFacing: 'right' as 'left' | 'right',
+    playerFacing: 'right' as FacingDirection,
+    mimicFacing: 'right' as FacingDirection,
     moveHistory: [] as Position[],
     moves: 0,
     mimicMoves: 0,
@@ -35,7 +36,7 @@ export const useGameStore = defineStore('game', {
       this.lastMimicMove = 0
     },
 
-    movePlayer(direction: 'left' | 'right' | 'up' | 'down'): string | void {
+    movePlayer(direction: MoveDirection): string | undefined {
       if (this.gameOver || !this.currentLevel) return
 
       const oldPlayerPos = { ...this.playerPos }
@@ -101,9 +102,9 @@ export const useGameStore = defineStore('game', {
       }
 
       // Check for victory
-      if (this.playerPos.row === this.currentLevel.altar.row && this.playerPos.col === this.currentLevel.altar.col) {
+      if (this.playerPos.row === this.currentLevel.exit.row && this.playerPos.col === this.currentLevel.exit.col) {
         this.gameOver = true
-        return 'Победа! Вы достигли алтаря!'
+        return 'Победа! Вы достигли выхода!'
       }
 
       // Обновляем предыдущую позицию после всех изменений
@@ -112,38 +113,68 @@ export const useGameStore = defineStore('game', {
     },
 
     updateMimicPosition() {
-      if (!this.currentLevel) return
-      if (this.moves < this.currentLevel.mimic.delay) return
-      if (this.mimicMoves >= this.currentLevel.mimic.moveLimit) return
+      if (!this.currentLevel) {
+        console.log("updateMimicPosition: currentLevel is null");
+        return;
+      }
+      if (this.moves < this.currentLevel.mimic.delay) {
+        console.log(`updateMimicPosition: moves (${this.moves}) < delay (${this.currentLevel.mimic.delay})`);
+        return;
+      }
+      if (this.mimicMoves >= this.currentLevel.mimic.moveLimit) {
+        console.log(`updateMimicPosition: mimicMoves (${this.mimicMoves}) >= moveLimit (${this.currentLevel.mimic.moveLimit})`);
+        return;
+      }
 
-      const lastPlayerMove = this.moves - this.currentLevel.mimic.delay
-      if (lastPlayerMove < 0) return
+      const lastPlayerMove = this.moves - this.currentLevel.mimic.delay;
+      if (lastPlayerMove < 0) {
+        console.log(`updateMimicPosition: lastPlayerMove (${lastPlayerMove}) < 0`);
+        return;
+      }
 
-      const playerMoves = this.moveHistory.slice(0, lastPlayerMove + 1)
-      if (playerMoves.length === 0) return
+      const playerMoves = this.moveHistory.slice(0, lastPlayerMove + 1);
+      if (playerMoves.length === 0) {
+        console.log("updateMimicPosition: playerMoves is empty");
+        return;
+      }
 
       // Если это первый ход мимика, сбрасываем счетчик
       if (this.moves === this.currentLevel.mimic.delay) {
-        this.mimicMoves = 0
-        this.mimicLastPos = null
-        return // Не считаем появление за ход
+        console.log("updateMimicPosition: first mimic move, resetting counters");
+        this.mimicMoves = 0;
+        this.mimicLastPos = null;
+        return;
       }
 
       // Сохраняем текущую позицию как предыдущую
       if (this.mimicPos) {
-        this.mimicLastPos = { ...this.mimicPos }
+        console.log(`updateMimicPosition: saving mimicPos (${JSON.stringify(this.mimicPos)}) as mimicLastPos`);
+        this.mimicLastPos = { ...this.mimicPos };
+      } else {
+        console.log("updateMimicPosition: mimicPos is null, skipping save");
       }
 
       // Увеличиваем счетчик ходов мимика
-      this.mimicMoves++
+      this.mimicMoves++;
+      console.log(`updateMimicPosition: mimicMoves incremented to ${this.mimicMoves}`);
+
+      // Проверяем, что mimicMoves не превышает длину playerMoves
+      if (this.mimicMoves > playerMoves.length) {
+        console.log(`updateMimicPosition: mimicMoves (${this.mimicMoves}) > playerMoves.length (${playerMoves.length})`);
+        return;
+      }
 
       // Обновляем направление
-      const currentMove = playerMoves[this.mimicMoves - 1]
-      if (currentMove) {
-        if (currentMove.col > (this.mimicLastPos?.col ?? 0)) {
-          this.mimicFacing = 'right'
-        } else if (currentMove.col < (this.mimicLastPos?.col ?? 0)) {
-          this.mimicFacing = 'left'
+      const currentMove = playerMoves[this.mimicMoves];
+      console.log(`updateMimicPosition: currentMove = ${JSON.stringify(currentMove)}, mimicLastPos = ${JSON.stringify(this.mimicLastPos)}`);
+
+      if (currentMove && this.mimicLastPos) {
+        if (currentMove.col > this.mimicLastPos.col) {
+          console.log("updateMimicPosition: setting mimicFacing to 'right'");
+          this.mimicFacing = 'right';
+        } else if (currentMove.col < this.mimicLastPos.col) {
+          console.log("updateMimicPosition: setting mimicFacing to 'left'");
+          this.mimicFacing = 'left';
         }
       }
     },
@@ -168,10 +199,18 @@ export const useGameStore = defineStore('game', {
       return this.buttons.some(b => b.pos.row === row && b.pos.col === col)
     },
 
+    isButtonActive(row: number, col: number): boolean {
+      return this.buttons.find(b => b.pos.row === row && b.pos.col === col)?.isActive || false
+    },
+
     checkButtons(pos: Position) {
-      // Сначала закрываем все двери
+      // Сначала закрываем все двери и деактивируем все кнопки
       this.doors.forEach(door => {
         door.isOpen = false
+      })
+
+      this.buttons.forEach(button => {
+        button.isActive = false
       })
 
       // Проверяем, стоит ли игрок на кнопке
@@ -181,6 +220,7 @@ export const useGameStore = defineStore('game', {
           if (door) {
             door.isOpen = true
           }
+          button.isActive = true
         }
       })
 
@@ -192,6 +232,7 @@ export const useGameStore = defineStore('game', {
             if (door) {
               door.isOpen = true
             }
+            button.isActive = true
           }
         })
       }

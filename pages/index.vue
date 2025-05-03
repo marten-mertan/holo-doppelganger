@@ -8,25 +8,19 @@ const router = useRouter()
 // Если уровень уже загружен, перенаправляем на игру
 onMounted(() => {
   if (gameStore.currentLevel) {
-    router.push('/game')
+    router.push('/game/')
   }
 })
 </script>
 
 <template>
-  <div :class="[$style.IndexPage, 'container']">
-    <LevelSelect />
+  <div :class="[$style.IndexPage, 'page container']">
+    <TheMenu />
   </div>
 </template>
 
 <style lang="scss" module>
 .IndexPage {
-  height: 100%;
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 2rem;
+  //
 }
 </style>

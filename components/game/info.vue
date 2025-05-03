@@ -7,8 +7,7 @@ const router = useRouter()
 const status = ref('Нажмите стрелки для движения')
 
 const remainingMoves = computed(() => {
-  if (!gameStore.currentLevel) return 0
-  return Math.max(0, gameStore.currentLevel.mimic.delay - gameStore.moves)
+  return gameStore.currentLevel ? Math.max(0, gameStore.currentLevel.mimic.delay - gameStore.moves) : 0
 })
 
 const mimicState = computed(() => {
@@ -22,25 +21,18 @@ const mimicPattern = computed(() => {
   if (!gameStore.currentLevel) return ''
   
   const maxMoves = gameStore.currentLevel.mimic.moveLimit
-  const moves = gameStore.moveHistory.slice(1) // Пропускаем начальную позицию
+  const moves = gameStore.moveHistory.slice(1)
   
-  // Берем ходы только до достижения лимита мимика
-  const movesToShow = moves.slice(0, maxMoves)
-  
-  const moveDescriptions = movesToShow.map((move, index) => {
-    const prevMove = index > 0 ? movesToShow[index - 1] : gameStore.currentLevel?.player
+  return moves.slice(0, maxMoves).map((move, index) => {
+    const prevMove = index > 0 ? moves[index - 1] : gameStore.currentLevel?.player
     if (!prevMove) return ''
     
-    let direction = ''
-    if (move.row < prevMove.row) direction = '↑'
-    else if (move.row > prevMove.row) direction = '↓'
-    else if (move.col > prevMove.col) direction = '→'
-    else if (move.col < prevMove.col) direction = '←'
-    
-    return direction
-  })
-  
-  return moveDescriptions.join(' ')
+    if (move.row < prevMove.row) return '↑'
+    if (move.row > prevMove.row) return '↓'
+    if (move.col > prevMove.col) return '→'
+    if (move.col < prevMove.col) return '←'
+    return ''
+  }).join(' ')
 })
 
 const resetGame = () => {
@@ -66,8 +58,8 @@ const goBack = () => {
 <template>
   <div :class="$style.gameInfo">
     <div :class="$style.controls">
-      <button @click="goBack" :class="$style.button">←</button>
-      <button @click="resetGame" :class="$style.button">↻</button>
+      <button @click="goBack" class="button">←</button>
+      <button @click="resetGame" class="button">↻</button>
     </div>
     
     <div :class="$style.stats">
@@ -101,7 +93,6 @@ const goBack = () => {
   padding: 12px;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
   border: 1px solid rgba(0, 0, 0, 0.04);
-  font-family: 'Inter', -apple-system, sans-serif;
   backdrop-filter: blur(4px);
 }
 
@@ -109,27 +100,6 @@ const goBack = () => {
   display: flex;
   gap: 8px;
   margin-bottom: 12px;
-}
-
-.button {
-  width: 32px;
-  height: 32px;
-  border-radius: 6px;
-  border: none;
-  background: rgba(0, 0, 0, 0.03);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.2s;
-  
-  &:hover {
-    background: rgba(0, 0, 0, 0.08);
-  }
-  
-  &:active {
-    transform: scale(0.95);
-  }
 }
 
 .stats {

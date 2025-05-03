@@ -2,8 +2,8 @@
   "gridSize": 7,
   "cellSize": 80,
   "mimic": {
-    "delay": 4,
-    "moveLimit": 5
+    "delay": 2,
+    "moveLimit": 3
   },
   "player": { 
     "row": 6, 

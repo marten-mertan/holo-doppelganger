@@ -2,7 +2,7 @@
 import GameEntity from '@/components/game/entity.vue'
 import GameTile from '@/components/game/tile.vue'
 import { useGameStore } from '~/stores/game'
-import type { Position } from '~/types/level'
+import type { Position } from '~/types/tLevel'
 
 const gameStore = useGameStore()
 

@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { useGameStore } from '~/stores/game'
-import type { Level } from '~/types/level'
+import type { Level } from '~/types/tLevel'
 import level1 from '~/assets/json/levels/1.json'
+import level2 from '~/assets/json/levels/2.json'
 
 const gameStore = useGameStore()
 const router = useRouter()
@@ -16,8 +17,8 @@ onMounted(() => {
   }
 
   try {
-    console.log('Loaded level:', level1) // Debug log
-    levels.value = [level1]
+    console.log('Loaded levels:', level1, level2) // Debug log
+    levels.value = [level1, level2]
   } catch (err) {
     const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred'
     console.error('Error loading levels:', errorMessage)
@@ -27,9 +28,9 @@ onMounted(() => {
 
 const selectLevel = (level: Level) => {
   try {
-    console.log('Selecting level:', level) // Debug log
+    console.log('Selecting level:', level)
     gameStore.loadLevel(level)
-    router.push('/game')
+    router.push('/game/')
   } catch (err) {
     const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred'
     console.error('Error loading level:', errorMessage)
@@ -39,7 +40,7 @@ const selectLevel = (level: Level) => {
 </script>
 
 <template>
-  <div :class="$style.LevelSelect">
+  <div :class="$style.TheMenu">
     <h1>Выберите уровень</h1>
     <div v-if="error" :class="$style.error">
       {{ error }}
@@ -60,58 +61,66 @@ const selectLevel = (level: Level) => {
 </template>
 
 <style module lang="scss">
-.LevelSelect {
+.TheMenu {
   padding: 2rem;
   text-align: center;
   color: #fff;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+  text-shadow: 2px 2px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;
+  font-family: 'Press Start 2P', cursive;
+  background-color: #4a4a4a;
+  border: .4rem solid $black;
+  box-shadow: .4rem .4rem 0 $black;
 
   h1 {
-    font-size: 2.5rem;
+    font-size: 2rem;
     margin-bottom: 2rem;
-    color: #fff;
+    color: $yellow;
   }
 }
 
 .error {
-  color: #ff4444;
+  color: #ff6666;
   margin: 1rem 0;
   padding: 1rem;
-  background: rgba(255, 68, 68, 0.1);
-  border-radius: 4px;
-  font-size: 1.1rem;
+  background: rgba(0, 0, 0, 0.3);
+  border: 2px solid #ff6666;
+  font-size: 1rem;
+  font-family: 'Press Start 2P', cursive;
 }
 
 .levels {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 2rem;
-  margin-top: 2rem;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
 }
 
 .levelCard {
-  background: rgba(51, 51, 51, 0.9);
-  padding: 2rem;
-  border-radius: 8px;
+  background: #3a3a3a;
+  padding: 1rem;
+  border-radius: 0;
   cursor: pointer;
-  transition: transform 0.2s;
   color: #fff;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: .4rem solid $black;
+  box-shadow: .4rem .4rem 0 $black;
+  font-family: 'Press Start 2P', cursive;
+  font-size: 0.9rem;
 
   &:hover {
-    transform: scale(1.05);
-    background: rgba(51, 51, 51, 1);
+    transform: translate(.2rem, .2rem);
+    box-shadow: .2rem .2rem 0 $black;
+    background: #4a4a4a;
   }
 
   h2 {
-    margin-bottom: 1rem;
-    font-size: 1.5rem;
-    color: #fff;
+    margin-bottom: 0.5rem;
+    font-size: 1.1rem;
+    color: #66ccff;
   }
 
   p {
-    margin: 0.5rem 0;
-    font-size: 1.1rem;
+    margin: 0.3rem 0;
+    font-size: 0.8rem;
     color: #fff;
   }
 }

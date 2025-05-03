@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useGameStore } from '~/stores/game'
-import type { Position } from '~/types/level'
+import type { Position } from '~/types/tLevel'
 
 const props = defineProps<{
   position: Position
@@ -34,32 +34,38 @@ const isLadderMid = computed(() => {
 const isDoor = computed(() => gameStore.isDoor(props.position.row, props.position.col))
 const isDoorOpen = computed(() => gameStore.isDoorOpen(props.position.row, props.position.col))
 const isButton = computed(() => gameStore.isButton(props.position.row, props.position.col))
-const isAltar = computed(() => 
-  props.position.row === gameStore.currentLevel?.altar.row && 
-  props.position.col === gameStore.currentLevel?.altar.col
+const isButtonActive = computed(() => gameStore.isButtonActive(props.position.row, props.position.col))
+const isExit = computed(() => 
+  props.position.row === gameStore.currentLevel?.exit.row && 
+  props.position.col === gameStore.currentLevel?.exit.col
 )
 </script>
 
 <template>
   <div 
-    class="cell" 
-    :class="{
-      'is-platform': isPlatform,
-      'is-ladder': isLadder,
-      'is-ladder-ground': isLadderGround,
-      'is-ladder-mid': isLadderMid,
-      'is-door': isDoor,
-      'is-button': isButton,
-      'is-altar': isAltar
-    }"
+    :class="[
+      $style.cell,
+      {
+        [$style['is-platform']]: isPlatform,
+        [$style['is-ladder']]: isLadder,
+        [$style['is-ladder-ground']]: isLadderGround,
+        [$style['is-ladder-mid']]: isLadderMid,
+        [$style['is-door']]: isDoor,
+        [$style['is-button']]: isButton,
+        [$style['is-exit']]: isExit
+      }
+    ]"
   >
-    <div v-if="isDoor" class="door" :class="{ 'is-open': isDoorOpen }"></div>
-    <div v-if="isButton" class="button"></div>
-    <div v-if="isAltar" class="altar"></div>
+    <div v-if="isDoor" :class="[$style.door, { [$style['is-open']]: isDoorOpen }]"></div>
+    <div v-if="isButton" :class="[$style.button, { [$style['is-active']]: isButtonActive }]"></div>
+    <div v-if="isExit" :class="$style.exit"></div>
   </div>
 </template>
 
-<style scoped lang="scss">
+<style module lang="scss">
+$exit-frames: 3;
+$exit-frame-width: 32px;
+
 .cell {
   width: 80px;
   height: 80px;
@@ -85,41 +91,55 @@ const isAltar = computed(() =>
 
   .door {
     position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: #9C27B0;
-    transition: transform 0.3s ease;
-    transform-origin: bottom;
-    transform: scaleY(1);
+    bottom: 18px;
+    left: 50%;
+    transform: translate(-50%, 0);
+    width: 44px;
+    height: 62px;
+    background-image: url('/holo-doppelganger/img/tiles/door.png');
+    background-repeat: no-repeat;
+    background-position: 0 0;
+    transition: background-position .3s ease .1s;
 
     &.is-open {
-      transform: scaleY(0);
+      background-position: 0 58px;
     }
   }
 
   .button {
     position: absolute;
-    top: 50%;
+    bottom: 18px;
     left: 50%;
-    transform: translate(-50%, -50%);
-    width: 40px;
-    height: 40px;
-    background-color: #FF9800;
-    border-radius: 50%;
+    transform: translate(-50%, 0);
+    width: 38px;
+    height: 14px;
+    background-image: url('/holo-doppelganger/img/tiles/button.png');
+    background-repeat: no-repeat;
+    background-position: 0 0;
+    transition: background-position .3s ease;
+
+    &.is-active {
+      background-position: 0 8px;
+    }
   }
 
-  .altar {
+  .exit {
     position: absolute;
-    top: 50%;
+    bottom: 22px;
     left: 50%;
-    transform: translate(-50%, -50%);
-    width: 60px;
-    height: 60px;
-    background-color: #9C27B0;
-    border-radius: 50%;
-    box-shadow: 0 0 20px rgba(156, 39, 176, 0.5);
+    transform: translate(-50%, 0);
+    width: 32px;
+    height: 64px;
+    background-image: url('/holo-doppelganger/img/tiles/exit.png');
+    background-repeat: no-repeat;
+    background-position: 0 0;
+    background-size: #{$exit-frames * $exit-frame-width} auto;
+    animation: exit #{$exit-frames * 0.15s} steps(#{$exit-frames}) infinite;
   }
+}
+
+@keyframes exit {
+  from { background-position-x: 0; }
+  to { background-position-x: -#{$exit-frame-width * ($exit-frames)}; }
 }
 </style>

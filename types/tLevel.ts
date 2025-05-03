@@ -17,6 +17,7 @@ export interface Door {
 
 export interface Button {
   pos: Position
+  isActive: boolean
   doorPos: Position
 }
 
@@ -28,7 +29,7 @@ export interface Level {
     moveLimit: number
   }
   player: Position
-  altar: Position
+  exit: Position
   platforms: Position[]
   doors: Door[]
   buttons: Button[]
