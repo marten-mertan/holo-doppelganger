@@ -70,23 +70,23 @@ $exit-frame-width: 32px;
   width: 80px;
   height: 80px;
   position: relative;
-  background-image: url('/holo-doppelganger/img/tiles/empty.png');
+  background-image: url('~/public/img/tiles/empty.png');
   background-size: cover;
 
   &.is-platform {
-    background-image: url('/holo-doppelganger/img/tiles/ground.png');
+    background-image: url('~/public/img/tiles/ground.png');
   }
 
   &.is-ladder {
-    background-image: url('/holo-doppelganger/img/tiles/ladder.png');
+    background-image: url('~/public/img/tiles/ladder.png');
   }
 
   &.is-ladder-ground {
-    background-image: url('/holo-doppelganger/img/tiles/ladder_ground.png');
+    background-image: url('~/public/img/tiles/ladder_ground.png');
   }
 
   &.is-ladder-mid {
-    background-image: url('/holo-doppelganger/img/tiles/ladder_mid.png');
+    background-image: url('~/public/img/tiles/ladder_mid.png');
   }
 
   .door {
@@ -96,7 +96,7 @@ $exit-frame-width: 32px;
     transform: translate(-50%, 0);
     width: 44px;
     height: 62px;
-    background-image: url('/holo-doppelganger/img/tiles/door.png');
+    background-image: url('~/public/img/tiles/door.png');
     background-repeat: no-repeat;
     background-position: 0 0;
     transition: background-position .3s ease .1s;
@@ -113,7 +113,7 @@ $exit-frame-width: 32px;
     transform: translate(-50%, 0);
     width: 38px;
     height: 14px;
-    background-image: url('/holo-doppelganger/img/tiles/button.png');
+    background-image: url('~/public/img/tiles/button.png');
     background-repeat: no-repeat;
     background-position: 0 0;
     transition: background-position .3s ease;
@@ -130,7 +130,7 @@ $exit-frame-width: 32px;
     transform: translate(-50%, 0);
     width: 32px;
     height: 64px;
-    background-image: url('/holo-doppelganger/img/tiles/exit.png');
+    background-image: url('~/public/img/tiles/exit.png');
     background-repeat: no-repeat;
     background-position: 0 0;
     background-size: #{$exit-frames * $exit-frame-width} auto;

@@ -170,7 +170,7 @@ $frame-width: 80px;
 
 @mixin entity-animation($type, $state, $frames, $duration) {
   &.#{$type}.#{$state} {
-    background-image: url('/holo-doppelganger/img/#{$type}/#{$type}_#{$state}.png');
+    background-image: url('~/public/img/#{$type}/#{$type}_#{$state}.png');
     background-size: #{$frames * $frame-width} auto;
     animation: #{$state} #{$frames * $duration} steps(#{$frames}) infinite;
   }
